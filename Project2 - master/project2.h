@@ -1,0 +1,19 @@
+//header file for project 2
+/*
+#ifdef -DBINARY
+#define MASK 11111111111111111111111111111111
+#define ODD_MASK 00000000111111110000000011111111
+#define EVEN_MASK 11111111000000001111111100000000
+#ifdef -DDECIMAL
+#define MASK 4294967295
+#define ODD_MASK 16711935
+#define EVEN_MASK 4278255360
+#define ODD_MASK 
+#ifdef -DHEXADECIMAL
+#define MASK FFFFFFFF
+#define ODD_MASK 00FF00FF
+#define EVEN_MASK FF00FF00
+*/
+
+#define XODD(n) ((((n>>24)&(0xFF))<<8) | (((n>>8)&0xFF)<<24) | (n&0x00FF00FF));
+#define XEVEN(n) (((n>>16)&(0xFF)) | ((n&0xFF)<<16) | (n&0xFF00FF00));
