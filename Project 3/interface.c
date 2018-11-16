@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define BUFLEN 1000
+#define BUFFLEN 2000
 
 int main(int argc, char *argv[], char *envp[]){
 	
@@ -19,7 +19,7 @@ int main(int argc, char *argv[], char *envp[]){
 	int status;
 	char param0[10];		//first param for db
 	char param1[10];		//second param for db
-	char buffer[BUFLEN];	//buffer for piping
+	char buffer[BUFFLEN];	//buffer for piping
 	
 	
 	err = pipe(toDB);	//create the first pipe
@@ -40,8 +40,8 @@ int main(int argc, char *argv[], char *envp[]){
 		close(toDB[1]);						//close read pipe to DB
 		close(fromDB[0]);					//close write pipe from DB
 		
-		sprintf(param0, "%d", fromDB[1]);	//send write stream
-		sprintf(param1, "%d", toDB[0]);		//send read stream
+		sprintf(param0, "%d", fromDB[1]);	//send write stream as param0
+		sprintf(param1, "%d", toDB[0]);		//send read stream as param1
 		
 		err = execl("./db", param0, param1, (char *)NULL);	//execute db
 		if(err == -1){	//check to see if error executing db
@@ -53,20 +53,20 @@ int main(int argc, char *argv[], char *envp[]){
 		
 		
 		
-		char input[100] = "list";
+		char input[100];
 		close(toDB[0]); 					//close read pipe to DB.
 		close(fromDB[1]);					//close write pipe from DB
 		
-		
 		do{
-			//char buffer[BUFLEN];	//buffer for piping
+			//char buffer[BUFFLEN];	//buffer for piping
 			// convert input to lower case
+			scanf("%s",input);
 			i = 0;
 			while(input[i]){
 				input[i] = tolower(input[i]);
 				i++;
 			}
-			//if the user inputs "exit"
+			
 			
 			
 			err = write(toDB[1], input, strlen(input)+1); //send input to DB
@@ -74,31 +74,29 @@ int main(int argc, char *argv[], char *envp[]){
 				printf("Error while writing in interface: %d\n", errno);
 			}
 			
-			if(!strcmp("exit", input)){
-				printf("child process %d completed\n", getpid());
-				waitpid(-1,&status,0);
-				printf("child process exit status = %d\n", status);
-				printf("db is complete\n");
-				
-				exit(0);
-			}
 			
-			err = read(fromDB[0], buffer, BUFLEN+1); //recieve response from DB
+			
+			err = read(fromDB[0], buffer, BUFFLEN); //recieve response from DB
 			if(err == -1){
 				printf("Error while reading in interface: %d\n", errno);
 			}
 			
-			//buffer[BUFLEN] = '\0';
-			printf("Response: %s\n", buffer);
-			printf("\nInput command (account,id | add,id,cn,date,amount | delete,id,cn | list | exit):\n");
 			
+			printf("Response: %s\n", buffer);
+			//if the user inputs "exit"
+			if(!strcmp("exit", input)){
+				printf("Interface: child process %d completed\n", getpid());
+				waitpid(-1,&status,0);
+				printf("Interface: child process exit status = %d\n", (status >> 8) & 0xFF);
+				
+				exit(0);
+			}
+			printf("\nInput command (account,id | add,id,cn,date,amount | delete,id,cn | list | exit):\n");
 
-			scanf("%s",input);
+			
 			
 		}while(1);
 		
-		
-		//waitpid(-1,0,0);
 		
 		exit(0);
 	}

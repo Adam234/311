@@ -29,8 +29,8 @@ int main(int argc, char *argv[], char *envp[]){
 		
 		Record records[100];				//max number of records is 100
 		
-		recordNum = getRecordNum(filename);	//retrieve the number of records in file
-		getRecordData(records, filename);	//store the records in file to the record struct
+		recordNum = getRecordNum(filename);
+		getRecordData(records, filename);
 		
 		for(i = 0; i < recordNum; i++){
 			printf("element[%d]:",i);
@@ -61,10 +61,8 @@ int main(int argc, char *argv[], char *envp[]){
 					break;
 				case 5: deleteRecord(records, &recordNum, buffer, filename, response);
 					break;
-				default:
-					sprintf(response,"Incorrect input\n");
 			}
-			
+			//sprintf(response,"Hello");
 			err = write(writeFD, response, strlen(response)+1);
 			if (err == -1)
 			{
@@ -117,7 +115,7 @@ void getRecordData(Record records[], char filename[]){
 	
 	for(i = 0; !feof(fp); i++){
 		
-		fscanf(fp, "%ld %d %s %f", &id, &checkNumber, date, &amount);
+		input = fscanf(fp, "%ld %d %s %f", &id, &checkNumber, date, &amount);
 		
 		records[i].id = id;
 		records[i].checkNumber = checkNumber;
@@ -163,7 +161,7 @@ int readCommand(char buffer[]){
 void getAccountAmount(Record records[], int recordNum, char buffer[], char filename[],char response[]){
 	getRecordData(records, filename);	//retrieve all date from acount
 	
-	char *id;							//used to store char array representation of id
+	char *id;							//
 	char token[2] = ",";
 	float amount = 0;
 	int i;
@@ -192,7 +190,7 @@ void addRecord(Record records[], int *recordNum, char buffer[], char filename[],
 	
 	command = strtok(buffer,token);
 	command = strtok(NULL,token);
-	id = atol(command);		
+	id = atol(command);
 	
 	command = strtok(NULL,token);
 	cn = atoi(command);
@@ -204,15 +202,12 @@ void addRecord(Record records[], int *recordNum, char buffer[], char filename[],
 	amount = atof(command);
 	sprintf(response,"%ld, %i, %s, %.2f\n", id,cn,date,amount);
 	
-	//update records structe
 	rn++;
 	records[rn-1].id = id;
 	records[rn-1].checkNumber = cn;
 	records[rn-1].amount = amount;
 	sprintf(records[rn-1].date, "%s", date);
 	*recordNum = rn;
-	
-	//update file
 	fp = fopen(filename, "a");
 	
 	if(fp == NULL){
@@ -228,14 +223,14 @@ void addRecord(Record records[], int *recordNum, char buffer[], char filename[],
 void deleteRecord(Record records[], int *recordNum, char buffer[], char filename[], char response[]){
 	
 	
-	long int id; 			// store id from buffer
-	int cn;					// store check number from buffer
-	int rn = *recordNum;	// total number of records
-	int i;					// for looping
-	int flag = 0;			// flag for updating records after delete
-	char token[2] = ",";	// delimiter in buffer
-	char *command;			// to split the buffer
-	FILE *fp;				// file pointer
+	long int id;
+	int cn;
+	int rn = *recordNum;
+	int i;
+	int flag = 0;
+	char token[2] = ",";
+	char *command;
+	FILE *fp;
 	
 	command = strtok(buffer,token);
 	command = strtok(NULL,token);
@@ -244,19 +239,16 @@ void deleteRecord(Record records[], int *recordNum, char buffer[], char filename
 	command = strtok(NULL,token);
 	cn = atoi(command);
 	
-	//update record struct
 	rn--;
 	for(i = 0; i < rn; i++){
 		
 		if(records[i].id == id && records[i].checkNumber == cn)
 			flag = 1;
 		if(flag)
-			records[i] = records[i+1]; // set the pointer of the record 
-									   // to be deleted to the next record in the record
+			records[i] = records[i+1];
 	}
 	*recordNum = rn;
 	
-	//update file
 	fp = fopen(filename, "w");
 	if(fp == NULL){
 		printf("Could not open file %s", filename);
